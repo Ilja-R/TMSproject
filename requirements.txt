@@ -1,0 +1,7 @@
+pip~=21.2.3
+wheel~=0.43.0
+lxml~=5.3.0
+tornado~=6.4
+setuptools~=57.4.0
+opencv-python~=4.10.0.84
+ultralytics~=8.3.31
