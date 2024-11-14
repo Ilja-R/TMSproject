@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scale Extractor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 50px;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: #f9f9f9;
+        }
+        .images {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 8px;
+        }
+        h2, h3 {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #image-text {
+            font-size: 18px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Scale Extractor</h1>
+        <input type="file" id="image-input" accept="image/*" onchange="loadOriginalImage()">
+        <button onclick="sendImage()">Process Image</button>
+
+        <div class="images" style="display: none;" id="image-container">
+            <div>
+                <h3>Original Image</h3>
+                <img id="original-image" alt="Original Image" style="display: none;">
+            </div>
+            <div>
+                <h3>Scales Area</h3>
+                <img id="processed-image" alt="Scales Area" style="display: none;">
+            </div>
+        </div>
+
+        <p id="image-text" style="display: none;"></p>
+    </div>
+
+    <script>
+        function loadOriginalImage() {
+            const imageInput = document.getElementById('image-input');
+            const originalImage = document.getElementById('original-image');
+            const processedImage = document.getElementById('processed-image');
+            const imageText = document.getElementById('image-text');
+            const imageContainer = document.getElementById('image-container');
+
+            if (imageInput.files.length > 0) {
+                // Display the original image immediately after it is chosen
+                const originalImageURL = URL.createObjectURL(imageInput.files[0]);
+                originalImage.src = originalImageURL;
+                originalImage.style.display = 'block';
+
+                // Reset processed image and text
+                processedImage.src = '';
+                processedImage.style.display = 'none';
+                imageText.textContent = '';
+                imageText.style.display = 'none';
+
+                // Show image container to display the original image
+                imageContainer.style.display = 'flex';
+            }
+        }
+
+        async function sendImage() {
+            const imageInput = document.getElementById('image-input');
+            const processedImage = document.getElementById('processed-image');
+            const imageText = document.getElementById('image-text');
+
+            if (imageInput.files.length === 0) {
+                alert("Please select an image.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', imageInput.files[0]);
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/process-image', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Display processed image and extracted text
+                    processedImage.src = `data:image/png;base64,${result.image}`;
+                    processedImage.style.display = 'block';
+
+                    imageText.textContent = `Extracted text: ${result.text}`;
+                    imageText.style.display = 'block';
+                } else {
+                    alert(result.error || "Error processing image.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error processing image.");
+            }
+        }
+    </script>
+</body>
+</html>
